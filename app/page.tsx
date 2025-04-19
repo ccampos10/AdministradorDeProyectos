@@ -4,7 +4,12 @@ import Dashboard from "@/components/dashboard"
 export default function Home() {
   return (
     <TaskManagementLayout>
-      <Dashboard />
+      <div></div>
     </TaskManagementLayout>
   )
+  // return (
+  //   <TaskManagementLayout>
+  //     <Dashboard />
+  //   </TaskManagementLayout>
+  // )
 }
