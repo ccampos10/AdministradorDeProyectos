@@ -1,5 +1,5 @@
 // URL base de la API
-const API_URL = "https://0833-2803-c180-2000-ff85-9d10-9bc4-65a1-500.ngrok-free.app/api/tareas";
+const API_URL = "https://0833-2803-c180-2000-ff85-9d10-9bc4-65a1-500.ngrok-free.app/api/tareas/";
 import { Task } from "@/components/task-management-system";
 
 export type Tarea = {
