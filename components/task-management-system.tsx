@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { CalendarIcon, PlusCircle, Edit, Trash2, User, Filter, X } from "lucide-react"
+import { CalendarIcon, PlusCircle, Edit, Trash2, User, Filter, X, PenLine } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -38,6 +38,7 @@ export type Task = {
   assignee: string
   status: Status
   createdAt: Date
+  notes: string
 }
 
 type Person = {
@@ -83,6 +84,8 @@ export default function TaskManagementSystem() {
   const [filterPriority, setFilterPriority] = useState<Priority | "all">("all")
   const [filterAssignee, setFilterAssignee] = useState<string | "all">("all")
   const [filterStatus, setFilterStatus] = useState<Status | "all">("all")
+  const [isNotesDialogOpen, setIsNotesDialogOpen] = useState(false)
+  const [taskNotes, setTaskNotes] = useState("")
 
   // Form state
   const [title, setTitle] = useState("")
@@ -154,6 +157,12 @@ export default function TaskManagementSystem() {
     setIsDialogOpen(true)
   }
 
+  const openNotesDialog = (task: Task) => {
+    setCurrentTask(task)
+    setTaskNotes(task.notes || "")
+    setIsNotesDialogOpen(true)
+  }
+
   const handleCreateTask = () => {
     if (!title || !assignee) return
 
@@ -166,6 +175,7 @@ export default function TaskManagementSystem() {
       assignee,
       status,
       createdAt: new Date(),
+      notes: "",
     }
 
     createTarea(newTask)
@@ -209,6 +219,25 @@ export default function TaskManagementSystem() {
         setTasks(tasks.filter((task) => task.id !== taskId))
       }
     })
+  }
+
+  const handleSaveNotes = () => {
+    if (!currentTask) return
+
+    const updatedTask: Task = {
+      ...currentTask,
+      notes: taskNotes,
+    }
+    updateTarea(currentTask.id, updatedTask)
+    .then((res) => {
+      const updatedTasks = tasks.map((task) =>
+        task.id === currentTask.id ? res : task,
+      )
+      setTasks(updatedTasks)
+    })
+
+    setIsNotesDialogOpen(false)
+    setCurrentTask(null)
   }
 
   const getAssigneeName = (id: string) => {
@@ -330,6 +359,10 @@ export default function TaskManagementSystem() {
                             <DropdownMenuItem onClick={() => openEditDialog(task)}>
                               <Edit className="mr-2 h-4 w-4" />
                               Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openNotesDialog(task)}>
+                              <PenLine className="mr-2 h-4 w-4" />
+                              Añadir notas
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => handleDeleteTask(task.id)}>
                               <Trash2 className="mr-2 h-4 w-4" />
@@ -516,6 +549,32 @@ export default function TaskManagementSystem() {
             <Button onClick={isEditMode ? handleUpdateTask : handleCreateTask}>
               {isEditMode ? "Update Task" : "Create Task"}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isNotesDialogOpen} onOpenChange={setIsNotesDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Añadir Notas</DialogTitle>
+            <DialogDescription>Añade notas adicionales para esta tarea.</DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="notes">Notas</Label>
+              <Textarea
+                id="notes"
+                value={taskNotes}
+                onChange={(e) => setTaskNotes(e.target.value)}
+                placeholder="Añade notas sobre esta tarea..."
+                rows={5}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsNotesDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveNotes}>Guardar Notas</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

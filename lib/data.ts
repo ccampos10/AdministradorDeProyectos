@@ -1,5 +1,5 @@
 // URL base de la API
-const API_URL = "http://localhost:3030/api/tareas/";
+const API_URL = "https://crucial-flea-partially.ngrok-free.app/api/tareas/";
 import { Task } from "@/components/task-management-system";
 
 export type Tarea = {
