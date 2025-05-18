@@ -1,5 +1,6 @@
 // URL base de la API
-const API_URL = "https://crucial-flea-partially.ngrok-free.app/api/tareas/";
+export const API_Base = "https://crucial-flea-partially.ngrok-free.app/"; // Tener en cuenta el / al final !!!!!!!
+const API_URL = API_Base+"api/tareas/";
 import { Task } from "@/components/task-management-system";
 
 export type Tarea = {
@@ -23,7 +24,7 @@ const formatTareas = (tareas: Task[]): Task[] => {
 // Función para obtener todos los datos
 export const getTareas = async (): Promise<Task[]> => {
     try {
-        const response = await fetch(API_URL);
+        const response = await fetch(API_URL, { credentials: "include" });
         if (!response.ok) {
             throw new Error(`Error al obtener las tareas: ${response.statusText}`);
         }
@@ -37,10 +38,26 @@ export const getTareas = async (): Promise<Task[]> => {
     }
 };
 
+export const getMisTareas = async (): Promise<Task[]> => {
+    try {
+        const response = await fetch(API_URL+"misTareas/", { credentials: "include" });
+        if (!response.ok) {
+            throw new Error(`Error al obtener las tareas: ${response.statusText}`);
+        }
+        let data = await response.json();
+        data = formatTareas(data);
+        console.log(data);
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
 // Función para obtener un dato por ID
 export const getTareaById = async (id: string): Promise<Record<string, any>> => {
     try {
-        const response = await fetch(`${API_URL}${id}`);
+        const response = await fetch(`${API_URL}${id}`, { credentials: "include" });
         if (!response.ok) {
             throw new Error(`Error al obtener la tarea con ID ${id}: ${response.statusText}`);
         }
@@ -57,6 +74,7 @@ export const createTarea = async (tarea: Task): Promise<Task> => {
     try {
         const response = await fetch(API_URL, {
             method: "POST",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
             },
@@ -80,6 +98,7 @@ export const updateTarea = async (id: string, tarea: Task): Promise<Task> => {
     try {
         const response = await fetch(`${API_URL}${id}`, {
             method: "PUT",
+            credentials: "include",
             headers: {
                 "Content-Type": "application/json",
             },
@@ -103,6 +122,7 @@ export const deleteTarea = async (id: string): Promise<Boolean> => {
     try {
         const response = await fetch(`${API_URL}${id}`, {
             method: "DELETE",
+            credentials: "include",
         });
         if (!response.ok) {
             throw new Error(`Error al eliminar la tarea con ID ${id}: ${response.statusText}`);

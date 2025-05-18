@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { CalendarIcon, PlusCircle, Edit, Trash2, User, Filter, X, PenLine } from "lucide-react"
+import { CalendarIcon, PlusCircle, Edit, Trash2, User, Filter, X, PenLine, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -24,6 +24,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 import { getTareas, createTarea, deleteTarea, updateTarea } from "@/lib/data"
+import { getUsers, logout } from "@/lib/login"
 
 type Priority = "high" | "medium" | "low"
 type Role = "worker" | "manager"
@@ -42,18 +43,18 @@ export type Task = {
 }
 
 type Person = {
-  id: string
   name: string
+  email: string
 }
 
 // Sample team members
-const teamMembers: Person[] = [
-  { id: "1", name: "John Doe" },
-  { id: "2", name: "Jane Smith" },
-  { id: "3", name: "Alex Johnson" },
-  { id: "4", name: "Sarah Williams" },
-  { id: "5", name: "Michael Brown" },
-]
+// const teamMembers: Person[] = [
+//   { id: "1", name: "John Doe" },
+//   { id: "2", name: "Jane Smith" },
+//   { id: "3", name: "Alex Johnson" },
+//   { id: "4", name: "Sarah Williams" },
+//   { id: "5", name: "Michael Brown" },
+// ]
 
 // Priority color mapping
 const priorityColors: Record<Priority, string> = {
@@ -77,6 +78,7 @@ const statusBadgeColors: Record<Status, string> = {
 export default function TaskManagementSystem() {
   const [role, setRole] = useState<Role>("worker")
   const [tasks, setTasks] = useState<Task[]>([])
+  const [teamMembers, setTeamMembers] = useState<Person[]>([])
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
@@ -99,9 +101,12 @@ export default function TaskManagementSystem() {
 
   // Initialize with sample tasks
   useEffect(() => {
-    getTareas().then((res) => { setTasks(res); setFilteredTasks(res); });
-    setTasks([])
-    setFilteredTasks([])
+    getTareas()
+    .then((res) => { setTasks(res); setFilteredTasks(res); })
+    .catch((error) => {
+      console.error("Error fetching tasks:", error)
+      window.location.href = "/"
+    });
   }, [])
 
   // Apply filters
@@ -122,6 +127,19 @@ export default function TaskManagementSystem() {
 
     setFilteredTasks(result)
   }, [tasks, filterPriority, filterAssignee, filterStatus])
+
+  // Obtener usuarios
+  // por alguna razon esto se ejecuta multiples veces
+  useEffect(() => {
+    getUsers()
+    .then((res) => {
+      setTeamMembers(res)
+    })
+    .catch((error) => {
+      console.error("Error fetching users:", error);
+      window.location.href = "/";
+    });
+  }, [])
 
   const resetFilters = () => {
     setFilterPriority("all")
@@ -240,10 +258,20 @@ export default function TaskManagementSystem() {
     setCurrentTask(null)
   }
 
-  const getAssigneeName = (id: string) => {
-    const person = teamMembers.find((member) => member.id === id)
-    return person ? person.name : "Unassigned"
+  const logoutHandler = () => {
+    logout()
+    .then((_) => {
+      window.location.href = "/"
+    })
+    .catch((error) => {
+      console.error("Error al cerrar sesión:", error)
+    })
   }
+
+  // const getAssigneeName = (id: string) => {
+  //   const person = teamMembers.find((member) => member.id === id)
+  //   return person ? person.name : "Unassigned"
+  // }
 
   const canEditDelete = (task: Task) => {
     return role === "manager" || (role === "worker" && task.assignee === "1") // Assuming user ID 1 is the current worker
@@ -274,8 +302,13 @@ export default function TaskManagementSystem() {
               Nueva Tarea
             </Button>
           )}
+          <Button onClick={logoutHandler} variant="link" className="text-red-500">
+            <LogOut className="mr-2 h-4 w-4" />
+            Cerrar sesión
+          </Button>
         </div>
       </div>
+      <h2 className="font-bold bg-yellow-500 text-white px-2 py-1 rounded">⚠️ Eliminar el selector de trabajador o administrador de proyectos</h2>
 
       <div className="bg-muted/40 p-4 rounded-lg">
         <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-4">
@@ -300,7 +333,7 @@ export default function TaskManagementSystem() {
               <SelectContent>
                 <SelectItem value="all">All Assignees</SelectItem>
                 {teamMembers.map((member) => (
-                  <SelectItem key={member.id} value={member.id}>
+                  <SelectItem key={member.name} value={member.name}>
                     {member.name}
                   </SelectItem>
                 ))}
@@ -382,7 +415,7 @@ export default function TaskManagementSystem() {
                       </div>
                       <div className="flex items-center text-sm">
                         <User className="mr-2 h-4 w-4" />
-                        <span>{getAssigneeName(task.assignee)}</span>
+                        <span>{task.assignee}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -428,7 +461,7 @@ export default function TaskManagementSystem() {
                     </div>
                     <div className="flex items-center text-sm">
                       <User className="mr-1 h-4 w-4" />
-                      <span>{getAssigneeName(task.assignee)}</span>
+                      <span>{task.assignee}</span>
                     </div>
                     <Badge className={priorityBadgeColors[task.priority]}>{task.priority}</Badge>
                     <Badge className={statusBadgeColors[task.status]}>{task.status}</Badge>
@@ -534,7 +567,7 @@ export default function TaskManagementSystem() {
                 </SelectTrigger>
                 <SelectContent>
                   {teamMembers.map((member) => (
-                    <SelectItem key={member.id} value={member.id}>
+                    <SelectItem key={member.name} value={member.name}>
                       {member.name}
                     </SelectItem>
                   ))}

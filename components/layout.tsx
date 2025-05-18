@@ -21,7 +21,7 @@ export default function TaskManagementLayout({ children }: TaskManagementLayoutP
   const navItems = [
     {
       name: "Inicio",
-      href: "/",
+      href: "/home",
       icon: <Home className="h-5 w-5" />,
     },
     {

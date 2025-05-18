@@ -1,17 +1,20 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { CalendarIcon, CheckCircle2, Clock, ListTodo, User } from "lucide-react"
+import { CalendarIcon, CheckCircle2, Clock, ListTodo, User, LogOut } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { format } from "date-fns"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
+import { getMisTareas } from "@/lib/data"
+import { getUsers, logout } from "@/lib/login"
+
 type Priority = "high" | "medium" | "low"
 type Status = "pending" | "in-progress" | "completed"
 
-type Task = {
+export type Task = {
   id: string
   title: string
   description: string
@@ -20,21 +23,22 @@ type Task = {
   assignee: string
   status: Status
   createdAt: Date
+  notes: string
 }
 
 type Person = {
-  id: string
   name: string
+  email: string
 }
 
 // Sample team members
-const teamMembers: Person[] = [
-  { id: "1", name: "John Doe" },
-  { id: "2", name: "Jane Smith" },
-  { id: "3", name: "Alex Johnson" },
-  { id: "4", name: "Sarah Williams" },
-  { id: "5", name: "Michael Brown" },
-]
+// const teamMembers: Person[] = [
+//   { id: "1", name: "John Doe" },
+//   { id: "2", name: "Jane Smith" },
+//   { id: "3", name: "Alex Johnson" },
+//   { id: "4", name: "Sarah Williams" },
+//   { id: "5", name: "Michael Brown" },
+// ]
 
 // Priority color mapping
 const priorityColors: Record<Priority, string> = {
@@ -50,6 +54,7 @@ const priorityBadgeColors: Record<Priority, string> = {
 }
 
 export default function Dashboard() {
+  const [teamMembers, setTeamMembers] = useState<Person[]>([])
   const [tasks, setTasks] = useState<Task[]>([])
   const [stats, setStats] = useState({
     total: 0,
@@ -61,87 +66,145 @@ export default function Dashboard() {
   })
 
   // Initialize with sample tasks
+  // useEffect(() => {
+  //   const sampleTasks: Task[] = [
+  //     {
+  //       id: "1",
+  //       title: "Design new landing page",
+  //       description: "Create wireframes and mockups for the new product landing page",
+  //       priority: "high",
+  //       dueDate: new Date(2023, 11, 25),
+  //       assignee: "1",
+  //       status: "in-progress",
+  //       createdAt: new Date(2023, 10, 15),
+  //       notes: "Focus on mobile responsiveness and SEO optimization",
+  //     },
+  //     {
+  //       id: "2",
+  //       title: "Implement authentication system",
+  //       description: "Set up user authentication with JWT and role-based access control",
+  //       priority: "medium",
+  //       dueDate: new Date(2023, 11, 30),
+  //       assignee: "3",
+  //       status: "pending",
+  //       createdAt: new Date(2023, 10, 18),
+  //       notes: "Use bcrypt for password hashing and JWT for token generation",
+  //     },
+  //     {
+  //       id: "3",
+  //       title: "Write API documentation",
+  //       description: "Document all API endpoints with examples and response schemas",
+  //       priority: "low",
+  //       dueDate: new Date(2023, 12, 5),
+  //       assignee: "2",
+  //       status: "pending",
+  //       createdAt: new Date(2023, 10, 20),
+  //       notes: "Use Swagger for generating documentation",
+  //     },
+  //     {
+  //       id: "4",
+  //       title: "Fix navigation bug",
+  //       description: "Address the navigation issue on mobile devices",
+  //       priority: "high",
+  //       dueDate: new Date(2023, 11, 22),
+  //       assignee: "4",
+  //       status: "pending",
+  //       createdAt: new Date(2023, 10, 21),
+  //       notes: "Test on iOS and Android devices",
+  //     },
+  //     {
+  //       id: "5",
+  //       title: "Update user profile page",
+  //       description: "Redesign the user profile page with new layout",
+  //       priority: "medium",
+  //       dueDate: new Date(2023, 11, 28),
+  //       assignee: "5",
+  //       status: "completed",
+  //       createdAt: new Date(2023, 10, 10),
+  //       notes: "Ensure compatibility with existing user data",
+  //     },
+  //   ]
+  //   setTasks(sampleTasks)
+
+  //   // Calculate stats
+  //   const today = new Date()
+  //   const nextWeek = new Date()
+  //   nextWeek.setDate(today.getDate() + 7)
+
+  //   setStats({
+  //     total: sampleTasks.length,
+  //     pending: sampleTasks.filter((t) => t.status === "pending").length,
+  //     inProgress: sampleTasks.filter((t) => t.status === "in-progress").length,
+  //     completed: sampleTasks.filter((t) => t.status === "completed").length,
+  //     highPriority: sampleTasks.filter((t) => t.priority === "high" && t.status !== "completed").length,
+  //     dueSoon: sampleTasks.filter((t) => t.status !== "completed" && t.dueDate >= today && t.dueDate <= nextWeek)
+  //       .length,
+  //   })
+  // }, [])
+
   useEffect(() => {
-    const sampleTasks: Task[] = [
-      {
-        id: "1",
-        title: "Design new landing page",
-        description: "Create wireframes and mockups for the new product landing page",
-        priority: "high",
-        dueDate: new Date(2023, 11, 25),
-        assignee: "1",
-        status: "in-progress",
-        createdAt: new Date(2023, 10, 15),
-      },
-      {
-        id: "2",
-        title: "Implement authentication system",
-        description: "Set up user authentication with JWT and role-based access control",
-        priority: "medium",
-        dueDate: new Date(2023, 11, 30),
-        assignee: "3",
-        status: "pending",
-        createdAt: new Date(2023, 10, 18),
-      },
-      {
-        id: "3",
-        title: "Write API documentation",
-        description: "Document all API endpoints with examples and response schemas",
-        priority: "low",
-        dueDate: new Date(2023, 12, 5),
-        assignee: "2",
-        status: "pending",
-        createdAt: new Date(2023, 10, 20),
-      },
-      {
-        id: "4",
-        title: "Fix navigation bug",
-        description: "Address the navigation issue on mobile devices",
-        priority: "high",
-        dueDate: new Date(2023, 11, 22),
-        assignee: "4",
-        status: "pending",
-        createdAt: new Date(2023, 10, 21),
-      },
-      {
-        id: "5",
-        title: "Update user profile page",
-        description: "Redesign the user profile page with new layout",
-        priority: "medium",
-        dueDate: new Date(2023, 11, 28),
-        assignee: "5",
-        status: "completed",
-        createdAt: new Date(2023, 10, 10),
-      },
-    ]
-    setTasks(sampleTasks)
+    getUsers()
+    .then((data) => {
+      setTeamMembers(data);
+    })
+    .catch((error) => {
+      console.error("Error al obtener los usuarios:", error);
+      window.location.href = "/";
+    })
 
-    // Calculate stats
-    const today = new Date()
-    const nextWeek = new Date()
-    nextWeek.setDate(today.getDate() + 7)
+    getMisTareas()
+    .then((data) => {
+      setTasks(data)
 
-    setStats({
-      total: sampleTasks.length,
-      pending: sampleTasks.filter((t) => t.status === "pending").length,
-      inProgress: sampleTasks.filter((t) => t.status === "in-progress").length,
-      completed: sampleTasks.filter((t) => t.status === "completed").length,
-      highPriority: sampleTasks.filter((t) => t.priority === "high" && t.status !== "completed").length,
-      dueSoon: sampleTasks.filter((t) => t.status !== "completed" && t.dueDate >= today && t.dueDate <= nextWeek)
-        .length,
+      // Calculate stats
+      const today = new Date()
+      const nextWeek = new Date()
+      nextWeek.setDate(today.getDate() + 7)
+
+      setStats({
+        total: data.length,
+        pending: data.filter((t) => t.status === "pending").length,
+        inProgress: data.filter((t) => t.status === "in-progress").length,
+        completed: data.filter((t) => t.status === "completed").length,
+        highPriority: data.filter((t) => t.priority === "high" && t.status !== "completed").length,
+        dueSoon: data.filter((t) => t.status !== "completed" && t.dueDate >= today && t.dueDate <= nextWeek).length,
+      })
+    })
+    .catch((error) => {
+      console.error("Error al obtener las tareas:", error);
+      window.location.href = "/";
     })
   }, [])
 
-  const getAssigneeName = (id: string) => {
-    const person = teamMembers.find((member) => member.id === id)
-    return person ? person.name : "Unassigned"
+  const logoutHandler = () => {
+    logout()
+    .then((_) => {
+      window.location.href = "/"
+    })
+    .catch((error) => {
+      console.error("Error al cerrar sesión:", error)
+    })
   }
+
+  // const getAssigneeName = (id: string) => {
+  //   const person = teamMembers.find((member) => member.id === id)
+  //   return person ? person.name : "Unassigned"
+  // }
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <p className="text-muted-foreground">Resumen de tareas y actividades</p>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          <p className="text-muted-foreground">Resumen de tareas y actividades</p>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <Button onClick={logoutHandler} variant="link" className="text-red-500">
+            <LogOut className="mr-2 h-4 w-4" />
+            Cerrar sesión
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -198,8 +261,10 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card className="col-span-1">
+      {/* <div className="grid gap-4 md:grid-cols-2"> */}
+      <div>
+        {/* <Card className="col-span-1"> */}
+        <Card>
           <CardHeader>
             <CardTitle>Tareas Pendientes</CardTitle>
             <CardDescription>Tareas que requieren atención</CardDescription>
@@ -227,7 +292,7 @@ export default function Dashboard() {
                           <CalendarIcon className="h-3 w-3" />
                           <span className="text-xs">{format(task.dueDate, "MMM dd")}</span>
                           <User className="h-3 w-3 ml-2" />
-                          <span className="text-xs">{getAssigneeName(task.assignee)}</span>
+                          <span className="text-xs">{task.assignee}</span>
                         </div>
                       </div>
                       <Badge className={priorityBadgeColors[task.priority]}>
@@ -253,7 +318,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <Card className="col-span-1">
+        {/* <Card className="col-span-1">
           <CardHeader>
             <CardTitle>Distribución de Tareas</CardTitle>
             <CardDescription>Asignación de tareas por miembro del equipo</CardDescription>
@@ -261,14 +326,14 @@ export default function Dashboard() {
           <CardContent>
             <div className="space-y-4">
               {teamMembers.map((member) => {
-                const memberTasks = tasks.filter((task) => task.assignee === member.id)
+                const memberTasks = tasks.filter((task) => task.assignee === member.name)
                 const pendingTasks = memberTasks.filter((task) => task.status !== "completed").length
                 const completedTasks = memberTasks.filter((task) => task.status === "completed").length
                 const totalTasks = memberTasks.length
                 const progressPercentage = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0
 
                 return (
-                  <div key={member.id} className="space-y-1">
+                  <div key={member.name} className="space-y-1">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
                         <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
@@ -288,7 +353,7 @@ export default function Dashboard() {
               })}
             </div>
           </CardContent>
-        </Card>
+        </Card> */}
       </div>
     </div>
   )
