@@ -12,6 +12,15 @@ import { X } from "lucide-react"
 
 import { login } from "@/lib/login"
 
+// Pendientes
+// - Poner una imagen real del proyecto en la pagina de inicio
+// - agregar un indicador de tareas fuera de la fecha limite en la pagina de home
+// - modificar el sistema de roles en la pagina de tareas, para que los administradores puedan editar todas las tareas, y los usuarios solo las propias
+// - Implementar sistema para los iconos con las iniciales del nombre
+// - eliminar y modificar secciones en la pagina de resumen
+// - mejorar colores en la pagina de resumen
+// - destacar las tareas fuera de limite en la pagina de resumen
+
 export default function LandingPage() {
   const [showLoginForm, setShowLoginForm] = useState(false)
   const [email, setEmail] = useState("")

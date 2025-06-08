@@ -41,14 +41,12 @@ import { LoadingPage } from "@/components/loading-screen"
 import { getUsersAdmin, addUser, editUser, deleteUser } from "@/lib/login"
 
 type usuario = {
-  id: number,
   name: string,
   email: string,
   role: string,
 }
 
 type usuarioEdit = {
-  id: number,
   name: string,
   email: string,
   emailOld: string,
@@ -57,7 +55,6 @@ type usuarioEdit = {
 }
 
 const emptyUser: usuarioEdit = {
-  id: 0,
   name: "",
   email: "",
   emailOld: "",
@@ -140,7 +137,7 @@ export default function AdminUsersPage() {
     })
     .catch((error) => {
       console.error("Error al obtener los usuarios:", error);
-      window.location.href = "/";
+      window.location.href = "/home";
     })
   }, [])
 

@@ -20,6 +20,9 @@ export default function OptionsLayout({ children }: { children: React.ReactNode 
     } else if (pathname.startsWith("/users")) {
       setTitulo("Administración del equipo");
       setMensaje("Gestiona todos los usuarios registrados en la plataforma");
+    } else if (pathname.startsWith("/resumen")) {
+      setTitulo("Resumen de Tareas");
+      setMensaje("Resumen general del estado de tus tareas - "+new Date().toLocaleDateString("es-ES"));
     }
   }, [pathname]);
 

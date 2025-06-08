@@ -5,7 +5,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ChevronRight, Home, ListTodo, Menu, UserRoundCog } from "lucide-react"
+import { ChevronRight, Home, ListTodo, Menu, UserRoundCog, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { UserMenu } from "@/components/user"
@@ -47,6 +47,11 @@ export default function TaskManagementLayout({ titulo, mensaje, children }: Task
             name: "Administrar equipo",
             href: "/users",
             icon: <UserRoundCog className="h-5 w-5" />,
+          },
+          {
+            name: "Resumen",
+            href: "/resumen",
+            icon: <FileText className="h-5 w-5" />,
           },
         ]);
       }
