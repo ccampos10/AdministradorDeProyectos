@@ -2,34 +2,69 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ChevronRight, Home, ListTodo, Menu } from "lucide-react"
+import { ChevronRight, Home, ListTodo, Menu, UserRoundCog } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { UserMenu } from "@/components/user"
 import { cn } from "@/lib/utils"
 
+import { logout, verifyAdmin } from "@/lib/login"
+
 interface TaskManagementLayoutProps {
+  titulo: string,
+  mensaje: string,
   children: React.ReactNode
 }
 
-export default function TaskManagementLayout({ children }: TaskManagementLayoutProps) {
+const baseNavItems = [
+  {
+    name: "Inicio",
+    href: "/home",
+    icon: <Home className="h-5 w-5" />,
+  },
+  {
+    name: "Tareas",
+    href: "/tasks",
+    icon: <ListTodo className="h-5 w-5" />,
+  },
+]
+
+export default function TaskManagementLayout({ titulo, mensaje, children }: TaskManagementLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [navItems, setNavItems] = useState(baseNavItems)
   const pathname = usePathname()
 
-  const navItems = [
-    {
-      name: "Inicio",
-      href: "/home",
-      icon: <Home className="h-5 w-5" />,
-    },
-    {
-      name: "Tareas",
-      href: "/tasks",
-      icon: <ListTodo className="h-5 w-5" />,
-    },
-  ]
+  useEffect(() => {
+    verifyAdmin()
+    .then((res) => {
+      if (res?.mensaje == "Es admin") {
+        setNavItems([
+          ... navItems,
+          {
+            name: "Administrar equipo",
+            href: "/users",
+            icon: <UserRoundCog className="h-5 w-5" />,
+          },
+        ]);
+      }
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+  }, [])
+
+  const logoutHandler = () => {
+    logout()
+    .then((_) => {
+      window.location.href = "/"
+    })
+    .catch((error) => {
+      console.error("Error al cerrar sesión:", error)
+    })
+  }
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -101,7 +136,31 @@ export default function TaskManagementLayout({ children }: TaskManagementLayoutP
 
       {/* Main content */}
       <main className={cn("flex-1 overflow-auto transition-all duration-300", sidebarOpen ? "md:ml-64" : "md:ml-0")}>
-        <div className="container mx-auto p-4 md:p-6">{children}</div>
+        <div className="container mx-auto p-4 md:p-6 flex flex-col h-full">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h1 className="text-3xl font-bold">{titulo}</h1>
+              <p className="text-muted-foreground">{mensaje}</p>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <UserMenu
+                userName="Usuario"
+                userImage="/placeholder.svg"
+                onProfileClick={() => console.log("Navegando a perfil")}
+                onLogoutClick={logoutHandler}
+              />
+            </div>
+
+            {/* <div className="flex items-center gap-4">
+              <Button onClick={logoutHandler} variant="link" className="text-red-500">
+                <LogOut className="mr-2 h-4 w-4" />
+                Cerrar sesión
+              </Button>
+            </div> */}
+          </div>
+          {children}
+        </div>
       </main>
     </div>
   )
