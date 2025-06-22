@@ -5,13 +5,13 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { ChevronRight, Home, ListTodo, Menu, UserRoundCog, FileText } from "lucide-react"
+import { ChevronRight, Home, ListTodo, Menu, UserRoundCog, FileText, HelpCircle, BookUser } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { UserMenu } from "@/components/user"
 import { cn } from "@/lib/utils"
 
-import { logout, verifyAdmin } from "@/lib/login"
+import { logout, howiam, notifi } from "@/lib/login"
 
 interface TaskManagementLayoutProps {
   titulo: string,
@@ -19,45 +19,71 @@ interface TaskManagementLayoutProps {
   children: React.ReactNode
 }
 
+type Person = {
+  name: string,
+  iniciales: string,
+  rol: string
+}
+
 const baseNavItems = [
   {
     name: "Inicio",
     href: "/home",
     icon: <Home className="h-5 w-5" />,
+    end: false,
   },
   {
     name: "Tareas",
     href: "/tasks",
     icon: <ListTodo className="h-5 w-5" />,
+    end: false,
+  },
+  {
+    name: "Contactos",
+    href: "/contactos",
+    icon: <BookUser className="h-5 w-5" />,
+    end: false,
+  },
+  {
+    name: "Soporte Técnico",
+    href: "/support",
+    icon: <HelpCircle className="h-5 w-5" />,
+    end: true,
   },
 ]
 
 export default function TaskManagementLayout({ titulo, mensaje, children }: TaskManagementLayoutProps) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [navItems, setNavItems] = useState(baseNavItems)
+  const [sesion, setSesion] = useState<Person | null>(null)
+
   const pathname = usePathname()
 
   useEffect(() => {
-    verifyAdmin()
+    howiam()
     .then((res) => {
-      if (res?.mensaje == "Es admin") {
+      if (res?.rol == "Admin") {
         setNavItems([
           ... navItems,
           {
             name: "Administrar equipo",
             href: "/users",
             icon: <UserRoundCog className="h-5 w-5" />,
+            end: false,
           },
           {
             name: "Resumen",
             href: "/resumen",
             icon: <FileText className="h-5 w-5" />,
+            end: false,
           },
         ]);
       }
+      setSesion(res);
     })
     .catch((err) => {
-      console.error(err);
+      console.error("Error fetching user:", err);
+      window.location.href = "/";
     });
   }, [])
 
@@ -86,9 +112,11 @@ export default function TaskManagementLayout({ titulo, mensaje, children }: Task
             <ChevronRight className={cn("h-5 w-5 transition-transform", !sidebarOpen && "rotate-180")} />
           </Button>
         </div>
-        <nav className="flex-1 overflow-auto py-4">
+        <nav className="flex-1 flex flex-col overflow-auto py-4">
           <ul className="space-y-1 px-2">
-            {navItems.map((item) => (
+            {navItems.map((item) => {
+              if (item.end) return null;
+              return(
               <li key={item.href}>
                 <Link
                   href={item.href}
@@ -101,10 +129,42 @@ export default function TaskManagementLayout({ titulo, mensaje, children }: Task
                   <span>{item.name}</span>
                 </Link>
               </li>
-            ))}
+            )})}
+          </ul>
+          <ul className="space-y-1 px-2 mt-auto">
+            {navItems.map((item) => {
+              if (!item.end) return null;
+              return(
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground",
+                      pathname === item.href
+                        ? "bg-accent text-accent-foreground"
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    {item.icon}
+                    <span>{item.name}</span>
+                  </Link>
+                </li>
+              )})}
           </ul>
         </nav>
       </aside>
+
+      {/* Show sidebar button when collapsed (desktop only) */}
+      {!sidebarOpen && (
+        <Button
+          variant="outline"
+          size="icon"
+          className="fixed left-4 top-4 z-30 hidden md:flex"
+          onClick={() => setSidebarOpen(true)}
+        >
+          <Menu className="h-5 w-5" />
+        </Button>
+      )}
 
       {/* Mobile sidebar */}
       <Sheet>
@@ -140,7 +200,7 @@ export default function TaskManagementLayout({ titulo, mensaje, children }: Task
       </Sheet>
 
       {/* Main content */}
-      <main className={cn("flex-1 overflow-auto transition-all duration-300", sidebarOpen ? "md:ml-64" : "md:ml-0")}>
+      <main className={cn("flex-1 overflow-auto transition-all duration-300", sidebarOpen ? "md:ml-64" : "md:ml-10")}>
         <div className="container mx-auto p-4 md:p-6 flex flex-col h-full">
           <div className="flex justify-between items-center mb-6">
             <div>
@@ -150,9 +210,10 @@ export default function TaskManagementLayout({ titulo, mensaje, children }: Task
 
             <div className="flex items-center gap-4">
               <UserMenu
-                userName="Usuario"
-                userImage="/placeholder.svg"
+                userName={sesion?.name ? sesion.name : "Usuario"}
+                iniciales={sesion?.iniciales ? sesion.iniciales : "US"}
                 onProfileClick={() => console.log("Navegando a perfil")}
+                onNotifClick={() => {notifi()}}
                 onLogoutClick={logoutHandler}
               />
             </div>

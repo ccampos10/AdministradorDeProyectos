@@ -4,10 +4,12 @@ import { useState, useEffect } from "react"
 import { CalendarIcon, CheckCircle2, Clock, ListTodo, User, LogOut } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { format } from "date-fns"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { LoadingPage } from "@/components/loading-screen"
+import Calendar from "@/components/calendar"
 
 import { getMisTareas } from "@/lib/data"
 import { logout } from "@/lib/login"
@@ -153,8 +155,8 @@ export default function Dashboard() {
         </div>
 
         {/* <div className="grid gap-4 md:grid-cols-2"> */}
-        <div>
-          {/* <Card className="col-span-1"> */}
+        {/* <div>
+          {/* <Card className="col-span-1"> * /}
           <Card>
             <CardHeader>
               <CardTitle>Tareas Pendientes</CardTitle>
@@ -208,7 +210,74 @@ export default function Dashboard() {
               </div>
             </CardContent>
           </Card>
-        </div>
+          <Calendar tasks={tasks}/>
+        </div> */}
+
+        <Tabs defaultValue="list" className="w-full">
+          <TabsList className="mb-4">
+            <TabsTrigger value="list">Lista de tareas</TabsTrigger>
+            <TabsTrigger value="calendar">Calendario</TabsTrigger>
+          </TabsList>
+          {/* <Card className="col-span-1"> */}
+          <TabsContent value="list">
+          <Card>
+            <CardHeader>
+              <CardTitle>Tareas Pendientes</CardTitle>
+              <CardDescription>Tareas que requieren atención</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {tasks
+                  .filter((task) => task.status !== "completed")
+                  .sort((a, b) => {
+                    // Sort by priority first (high > medium > low)
+                    const priorityOrder = { high: 0, medium: 1, low: 2 }
+                    if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
+                      return priorityOrder[a.priority] - priorityOrder[b.priority]
+                    }
+                    // Then sort by due date
+                    return a.dueDate.getTime() - b.dueDate.getTime()
+                  })
+                  .slice(0, 5)
+                  .map((task) => (
+                    <div key={task.id} className={`${priorityColors[task.priority]} border-l-4 p-3 rounded-md`}>
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-medium text-sm">{task.title}</h3>
+                          <div className="flex items-center gap-2 mt-1">
+                            <CalendarIcon className="h-3 w-3" />
+                            <span className="text-xs">{format(task.dueDate, "MMM dd")}</span>
+                            <User className="h-3 w-3 ml-2" />
+                            <span className="text-xs">{task.assignee}</span>
+                          </div>
+                        </div>
+                        <Badge className={priorityBadgeColors[task.priority]}>
+                          {task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+
+                {tasks.filter((task) => task.status !== "completed").length === 0 && (
+                  <div className="text-center py-6">
+                    <CheckCircle2 className="h-12 w-12 mx-auto text-muted-foreground opacity-20" />
+                    <p className="mt-2 text-sm text-muted-foreground">No hay tareas pendientes</p>
+                  </div>
+                )}
+
+                <div className="mt-4 text-center">
+                  <Button asChild variant="outline" size="sm">
+                    <Link href="/tasks">Ver todas las tareas</Link>
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          </TabsContent>
+          <TabsContent value="calendar">
+          <Calendar tasks={tasks}/>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )

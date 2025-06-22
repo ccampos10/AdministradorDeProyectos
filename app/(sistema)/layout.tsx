@@ -23,6 +23,12 @@ export default function OptionsLayout({ children }: { children: React.ReactNode 
     } else if (pathname.startsWith("/resumen")) {
       setTitulo("Resumen de Tareas");
       setMensaje("Resumen general del estado de tus tareas - "+new Date().toLocaleDateString("es-ES"));
+    } else if (pathname.startsWith("/support")) {
+      setTitulo("Soporte Técnico");
+      setMensaje("Estamos aquí para ayudarte. Contáctanos a través de cualquiera de estos medios.");
+    }else if (pathname.startsWith("/contactos")) {
+      setTitulo("Contactos de usuarios");
+      setMensaje("Conecta con otros usuarios de la plataforma.");
     }
   }, [pathname]);
 

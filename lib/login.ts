@@ -1,6 +1,22 @@
 import { API_Base } from "@/lib/data";
 const API_URL = API_Base+"api/user/";
 
+export const notifi = async (): Promise<any> => {
+  try {
+    const response = await fetch(API_Base+"api/email/", { credentials: "include" });
+
+    if (!response.ok) {
+      throw new Error(`Error al obtener notificaciones: ${response.statusText}`);
+    }
+
+    let data = await response.json();
+    console.log("Notificaciones obtenidas:", data);
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}
+
 export const login = async (Correo: string, Contrasena: string): Promise<Boolean> => {
   try {
     const response = await fetch(API_URL, {
@@ -60,10 +76,29 @@ export const getUsers = async (): Promise<any> => {
         console.log(data);
         data = data.map((user: any) => {
             return {
-                name: user.Nombre
+                name: user.Nombre,
+                email: user.Correo,
+                iniciales: user.Iniciales
             }
         })
         console.log("Usuarios obtenidos:", data);
+        return data;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+
+export const howiam = async (): Promise<any> => {
+    try {
+        const response = await fetch(API_URL+"howiam/", { credentials: "include" });
+    
+        if (!response.ok) {
+          throw new Error(`Error al comprobar el usuario: ${response.statusText}`);
+        }
+    
+        let data = await response.json();
+        console.log("respuesta:", data);
         return data;
     } catch (error) {
         console.error(error);
@@ -104,6 +139,7 @@ export const getUsersAdmin = async (): Promise<any> => {
         data = data.map((user: any) => {
             return {
                 name: user.Nombre,
+                iniciales: user.Iniciales,
                 email: user.Correo,
                 role: user.Rol,
             }

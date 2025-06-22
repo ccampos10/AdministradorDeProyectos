@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { CalendarIcon, PlusCircle, Edit, Trash2, User, Filter, X, PenLine, LogOut } from "lucide-react"
+import { CalendarIcon, PlusCircle, Edit, Trash2, User, Filter, X, PenLine, TriangleAlert, LogOut } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -23,13 +23,12 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { LoadingPage } from "@/components/loading-screen"
-import { UserMenu } from "@/components/user"
+// import { UserMenu } from "@/components/user"
 
 import { getTareas, createTarea, deleteTarea, updateTarea } from "@/lib/data"
-import { getUsers, logout } from "@/lib/login"
+import { getUsers, logout, howiam } from "@/lib/login"
 
 type Priority = "high" | "medium" | "low"
-type Role = "worker" | "manager"
 type Status = "pending" | "in-progress" | "completed"
 
 export type Task = {
@@ -45,7 +44,8 @@ export type Task = {
 }
 
 type Person = {
-  name: string
+  name: string,
+  rol: string
 }
 
 // Sample team members
@@ -78,7 +78,7 @@ const statusBadgeColors: Record<Status, string> = {
 
 export default function TaskManagementSystem() {
   const [isLoading, setLoading] = useState(true);
-  const [role, setRole] = useState<Role>("worker")
+  const [sesion, setSesion] = useState<Person | null>(null)
   const [tasks, setTasks] = useState<Task[]>([])
   const [teamMembers, setTeamMembers] = useState<Person[]>([])
   const [filteredTasks, setFilteredTasks] = useState<Task[]>([])
@@ -104,7 +104,7 @@ export default function TaskManagementSystem() {
     // Obtener usuarios
     getUsers()
     .then((res) => {
-      setTeamMembers(res);
+      setTeamMembers(res.map((user: any) => {return {... user, rol: ''}}));
     })
     .catch((error) => {
       console.error("Error fetching users:", error);
@@ -116,6 +116,15 @@ export default function TaskManagementSystem() {
     .then((res) => { setTasks(res); setLoading(false); })
     .catch((error) => {
       console.error("Error fetching tasks:", error)
+      window.location.href = "/"
+    });
+
+    howiam()
+    .then((res) => {
+      setSesion(res)
+    })
+    .catch((error) => {
+      console.error("Error fetching user:", error)
       window.location.href = "/"
     });
   }, [])
@@ -272,7 +281,8 @@ export default function TaskManagementSystem() {
   // }
 
   const canEditDelete = (task: Task) => {
-    return true;
+    if (!sesion) return false;
+    return sesion.rol === "Admin" || task.assignee === sesion.name;
     // return role === "manager" || (role === "worker" && task.assignee === "1") // Assuming user ID 1 is the current worker
   }
 
@@ -311,7 +321,6 @@ export default function TaskManagementSystem() {
             />
           </div>
         </div> */}
-        <h2 className="font-bold bg-yellow-500 text-white px-2 py-1 rounded">⚠️ Eliminar el selector de trabajador o administrador de proyectos</h2>
 
         <div className="bg-muted/40 p-4 rounded-lg">
           <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between mb-4">
@@ -380,7 +389,13 @@ export default function TaskManagementSystem() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {filteredTasks.map((task) => (
+                {filteredTasks.map((task) => {
+                  const hoy = new Date();
+                  hoy.setHours(0, 0, 0, 0);
+                  const estaAtrasada = task.dueDate <= hoy && task.status !== "completed";
+
+                  return(
+
                   <Card
                     key={task.id}
                     className={`${priorityColors[task.priority]} border-l-4 hover:shadow-md transition-shadow`}
@@ -424,6 +439,10 @@ export default function TaskManagementSystem() {
                           <User className="mr-2 h-4 w-4" />
                           <span>{task.assignee}</span>
                         </div>
+                        {estaAtrasada && <div className="flex items-center text-sm">
+                          <TriangleAlert className="mr-2 h-4 w-4 text-red-600" />
+                          <span className="text-red-600 font-bold">Tarea atrasada</span>
+                        </div>}
                       </div>
                     </CardContent>
                     <CardFooter className="pt-0 flex justify-between">
@@ -438,7 +457,8 @@ export default function TaskManagementSystem() {
                       </Badge>
                     </CardFooter>
                   </Card>
-                ))}
+                  )
+                })}
               </div>
             )}
           </TabsContent>

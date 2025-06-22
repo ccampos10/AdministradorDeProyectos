@@ -1,5 +1,5 @@
 "use client"
-import { User, LogOut, UserCircle } from "lucide-react"
+import { User, LogOut, BellRing } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,15 +12,17 @@ import { Button } from "@/components/ui/button"
 
 interface UserMenuProps {
   userName?: string
-  userImage?: string
+  iniciales?: string
   onProfileClick?: () => void
+  onNotifClick?: () => void
   onLogoutClick?: () => void
 }
 
 export function UserMenu({
   userName = "Usuario",
-  userImage,
+  iniciales = "US",
   onProfileClick = () => console.log("Navegando a perfil"),
+  onNotifClick = () => console.log("Actualizando notificaciones"),
   onLogoutClick = () => console.log("Cerrando sesión"),
 }: UserMenuProps) {
   return (
@@ -29,12 +31,15 @@ export function UserMenu({
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-            <Avatar className="h-10 w-10">
+            <Avatar className="relative h-12 w-12">
               {/* <AvatarImage src={userImage || "/placeholder.svg"} alt={userName} /> */}
               {/* <User className="mr-2 h-10 w-10" /> */}
-              <AvatarFallback className="bg-primary/10">
+              {/* <AvatarFallback className="bg-primary/10">
                 <UserCircle className="h-6 w-6 text-primary" />
-              </AvatarFallback>
+              </AvatarFallback> */}
+              <div className="absolute h-full w-full flex flex-col items-center justify-center bg-primary/10 text-lg font-semibold text-primary">
+                {iniciales}
+              </div>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
@@ -48,6 +53,11 @@ export function UserMenu({
           <DropdownMenuItem onClick={onProfileClick} className="cursor-pointer">
             <User className="mr-2 h-4 w-4" />
             <span>Mi perfil</span>
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={onNotifClick} className="cursor-pointer">
+            <BellRing className="mr-2 h-4 w-4" />
+            <span>Actualizar notificaciones</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={onLogoutClick} className="cursor-pointer text-red-600">

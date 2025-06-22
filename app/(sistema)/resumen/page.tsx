@@ -43,7 +43,7 @@ interface Task {
 interface TeamMember {
   name: string
   email: string
-  avatar: string
+  iniciales: string
   role: string
 }
 
@@ -68,9 +68,6 @@ export default function ResumenPage() {
 
     getUsersAdmin()
     .then((res: TeamMember[]) => {
-        res = res.map((user) => {
-            return {... user, avatar: "GG"}
-        });
         setTeamMembers(res);
     })
     .catch((err) => {
@@ -348,11 +345,11 @@ export default function ResumenPage() {
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case "alta":
+      case "high":
         return "bg-red-100 text-red-800 border-red-200"
-      case "media":
+      case "medium":
         return "bg-yellow-100 text-yellow-800 border-yellow-200"
-      case "baja":
+      case "low":
         return "bg-green-100 text-green-800 border-green-200"
       default:
         return "bg-gray-100 text-gray-800 border-gray-200"
@@ -361,11 +358,11 @@ export default function ResumenPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "completada":
+      case "completed":
         return "bg-green-100 text-green-800 border-green-200"
-      case "en-progreso":
+      case "in-progress":
         return "bg-blue-100 text-blue-800 border-blue-200"
-      case "pendiente":
+      case "pending":
         return "bg-gray-100 text-gray-800 border-gray-200"
       default:
         return "bg-gray-100 text-gray-800 border-gray-200"
@@ -373,21 +370,44 @@ export default function ResumenPage() {
   }
 
   // Función para generar el gráfico circular SVG
-  const generateDonutChart = (completed: number, inProgress: number, pending: number, size = 80) => {
-    const total = completed + inProgress + pending
-    if (total === 0) return null
+  const generateDonutChart = (completed: number, inProgress: number, pending: number, color: string, size = 80) => {
+    let total = completed + inProgress + pending
 
     const radius = size / 2
     const strokeWidth = size / 8
     const normalizedRadius = radius - strokeWidth / 2
     const circumference = normalizedRadius * 2 * Math.PI
+    if (total === 0) total = 1;
+
+    // if (total === 0) return (
+    //   <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
+    //     {/* Fondo del gráfico */}
+    //     <circle
+    //       cx={radius}
+    //       cy={radius}
+    //       r={normalizedRadius}
+    //       fill="transparent"
+    //       stroke="#e5e7eb"
+    //       strokeWidth={strokeWidth}
+    //       strokeDasharray={circumference}
+    //       strokeDashoffset={0}
+    //     />
+    //       <circle cx={radius} cy={radius} r={normalizedRadius - strokeWidth}
+    //       className={color == "green" ? "fill-green-200" : color == "yellow" ? "fill-yellow-200" : "fill-red-200"}
+    //     />
+    //   </svg>
+    // )
 
     const completedPercentage = completed / total
     const inProgressPercentage = inProgress / total
     const pendingPercentage = pending / total
 
-    const completedOffset = circumference * (1 - completedPercentage)
-    const inProgressOffset = circumference * (1 - inProgressPercentage - completedPercentage)
+    const completedOffset = circumference * (completedPercentage)
+    const inProgressOffset = circumference * (completedPercentage + inProgressPercentage)
+
+    const color1 = color == "green" ? "stroke-green-300" : color == "yellow" ? "stroke-yellow-300" : "stroke-red-300"
+    const color2 = color == "green" ? "stroke-green-500" : color == "yellow" ? "stroke-yellow-500" : "stroke-red-500"
+    const color3 = color == "green" ? "stroke-green-700" : color == "yellow" ? "stroke-yellow-700" : "stroke-red-700"
 
     return (
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} className="transform -rotate-90">
@@ -397,8 +417,10 @@ export default function ResumenPage() {
           cy={radius}
           r={normalizedRadius}
           fill="transparent"
-          stroke="#e5e7eb"
+          // stroke="#e5e7eb"
           strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={0}
         />
 
         {/* Completadas (verde) */}
@@ -408,11 +430,12 @@ export default function ResumenPage() {
             cy={radius}
             r={normalizedRadius}
             fill="transparent"
-            stroke="#22c55e"
+            // stroke="#22c55e"
+            className={color1}
             strokeWidth={strokeWidth}
             strokeDasharray={circumference}
             strokeDashoffset={0}
-            strokeLinecap="round"
+            // strokeLinecap="round"
           />
         )}
 
@@ -423,11 +446,12 @@ export default function ResumenPage() {
             cy={radius}
             r={normalizedRadius}
             fill="transparent"
-            stroke="#3b82f6"
+            // stroke="#3b82f6"
+            className={color2}
             strokeWidth={strokeWidth}
             strokeDasharray={circumference}
             strokeDashoffset={completedOffset}
-            strokeLinecap="round"
+            // strokeLinecap="round"
           />
         )}
 
@@ -438,16 +462,19 @@ export default function ResumenPage() {
             cy={radius}
             r={normalizedRadius}
             fill="transparent"
-            stroke="#9ca3af"
+            // stroke="#9ca3af"
+            className={color3}
             strokeWidth={strokeWidth}
             strokeDasharray={circumference}
             strokeDashoffset={inProgressOffset}
-            strokeLinecap="round"
+            // strokeLinecap="round"
           />
         )}
 
         {/* Círculo central */}
-        <circle cx={radius} cy={radius} r={normalizedRadius - strokeWidth} fill="white" />
+        <circle cx={radius} cy={radius} r={normalizedRadius - strokeWidth}
+          className={color == "green" ? "fill-green-200" : color == "yellow" ? "fill-yellow-200" : "fill-red-200"}
+        />
       </svg>
     )
   }
@@ -464,21 +491,15 @@ export default function ResumenPage() {
       {isLoading && <LoadingPage message="Cargando datos..." />}
       {estaGeneradoPDF && <LoadingPage message="Generando pdf..." total={true}/>}
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Resumen de Tareas</h1>
-          <p className="text-muted-foreground">
-            Resumen general del estado de tus tareas - {new Date().toLocaleDateString("es-ES")}
-          </p>
-        </div>
-        <Button onClick={downloadResumen} className="flex items-center gap-2">
+      <div className="w-full">
+        <Button onClick={downloadResumen} className="w-full ">
           <Download className="h-4 w-4" />
           Descargar Resumen
         </Button>
       </div>
 
       {/* Estadísticas Generales */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Tareas</CardTitle>
@@ -522,7 +543,7 @@ export default function ResumenPage() {
             <p className="text-xs text-muted-foreground">Por iniciar</p>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6"> */}
       <div>
@@ -686,14 +707,22 @@ export default function ResumenPage() {
                       <h4 className="font-semibold text-blue-900">Resumen General</h4>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-4 gap-4">
                       <div className="text-center">
-                        <div className="text-lg font-bold text-green-600">{completedTasks}</div>
+                        <div className="text-lg font-bold text-blue-900">{totalTasks}</div>
+                        <div className="text-xs text-blue-700">Total</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-blue-900">{completedTasks}</div>
                         <div className="text-xs text-blue-700">Completadas</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-lg font-bold text-blue-600">{inProgressTasks}</div>
+                        <div className="text-lg font-bold text-blue-900">{inProgressTasks}</div>
                         <div className="text-xs text-blue-700">En Progreso</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-lg font-bold text-blue-900">{pendingTasks}</div>
+                        <div className="text-xs text-blue-700">Pendientes</div>
                       </div>
                     </div>
 
@@ -786,7 +815,7 @@ export default function ResumenPage() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {workloadByMember.map((member) => {
-              const workload = getWorkloadLevel(member.totalTasks)
+              const workload = getWorkloadLevel(member.totalTasks - member.completedTasks)
               const workloadColorClass =
                 workload.color === "green"
                   ? "from-green-50 to-green-100/50 border-green-200"
@@ -794,19 +823,14 @@ export default function ResumenPage() {
                     ? "from-yellow-50 to-yellow-100/50 border-yellow-200"
                     : "from-red-50 to-red-100/50 border-red-200"
 
-              const workloadTextClass =
-                workload.color === "green"
-                  ? "text-green-700"
-                  : workload.color === "yellow"
-                    ? "text-yellow-700"
-                    : "text-red-700"
-
-              const workloadBgClass =
-                workload.color === "green"
-                  ? "bg-green-500"
-                  : workload.color === "yellow"
-                    ? "bg-yellow-500"
-                    : "bg-red-500"
+              const workloadTextClassH1 = workload.color === "green" ? "text-green-700" : workload.color === "yellow" ? "text-yellow-700" : "text-red-700"
+              const workloadTextClassH2 = workload.color === "green" ? "text-green-950" : workload.color === "yellow" ? "text-yellow-950" : "text-red-950"
+              const workloadBgClassL1 = workload.color === "green" ? "bg-green-200" : workload.color === "yellow" ? "bg-yellow-200" : "bg-red-200"
+              const workloadBgClassL2 = workload.color === "green" ? "bg-green-500" : workload.color === "yellow" ? "bg-yellow-500" : "bg-red-500"
+              // const workloadBgClassL3 = workload.color === "green" ? "bg-green-500" : workload.color === "yellow" ? "bg-yellow-500" : "bg-red-500"
+              const estadisticaColor1 = workload.color === "green" ? "bg-green-300" : workload.color === "yellow" ? "bg-yellow-300" : "bg-red-300";
+              const estadisticaColor2 = workload.color === "green" ? "bg-green-500" : workload.color === "yellow" ? "bg-yellow-500" : "bg-red-500";
+              const estadisticaColor3 = workload.color === "green" ? "bg-green-700" : workload.color === "yellow" ? "bg-yellow-700" : "bg-red-700";
 
               return (
                 <div
@@ -815,12 +839,12 @@ export default function ResumenPage() {
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-lg font-semibold text-primary">
-                        {member.avatar}
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-full ${workloadBgClassL1} text-lg font-semibold text-primary`}>
+                        {member.iniciales}
                       </div>
                       <div>
-                        <h3 className="font-semibold text-lg">{member.name}</h3>
-                        <p className="text-sm text-muted-foreground">{member.role}</p>
+                        <h3 className={`font-semibold text-lg ${workloadTextClassH1}`}>{member.name}</h3>
+                        <p className={`text-sm ${workloadTextClassH2}`}>{member.role}</p>
                       </div>
                     </div>
                     <div className="flex flex-col items-end">
@@ -846,9 +870,9 @@ export default function ResumenPage() {
                     {/* Gráfico de distribución */}
                     <div className="flex flex-col items-center justify-center">
                       <div className="relative">
-                        {generateDonutChart(member.completedTasks, member.inProgressTasks, member.pendingTasks)}
+                        {generateDonutChart(member.completedTasks, member.inProgressTasks, member.pendingTasks, workload.color)}
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <span className="text-lg font-bold">{member.totalTasks}</span>
+                          <span className={`text-xl font-bold ${workloadTextClassH2}`}>{member.totalTasks}</span>
                         </div>
                       </div>
                       <p className="text-sm text-muted-foreground mt-2">Total de tareas</p>
@@ -858,24 +882,24 @@ export default function ResumenPage() {
                     <div className="grid grid-cols-1 gap-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="h-3 w-3 rounded-full bg-green-500"></div>
+                          <div className={`h-3 w-3 rounded-full ${estadisticaColor1}`}></div>
                           <span className="text-sm">Completadas</span>
                         </div>
-                        <span className="font-semibold text-green-700">{member.completedTasks}</span>
+                        <span className={`font-semibold ${workloadTextClassH2}`}>{member.completedTasks}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="h-3 w-3 rounded-full bg-blue-500"></div>
+                          <div className={`h-3 w-3 rounded-full ${estadisticaColor2}`}></div>
                           <span className="text-sm">En Progreso</span>
                         </div>
-                        <span className="font-semibold text-blue-700">{member.inProgressTasks}</span>
+                        <span className={`font-semibold ${workloadTextClassH2}`}>{member.inProgressTasks}</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <div className="h-3 w-3 rounded-full bg-gray-400"></div>
+                          <div className={`h-3 w-3 rounded-full ${estadisticaColor3}`}></div>
                           <span className="text-sm">Pendientes</span>
                         </div>
-                        <span className="font-semibold text-gray-700">{member.pendingTasks}</span>
+                        <span className={`font-semibold ${workloadTextClassH2}`}>{member.pendingTasks}</span>
                       </div>
                     </div>
                   </div>
@@ -886,9 +910,9 @@ export default function ResumenPage() {
                       <span>Progreso general</span>
                       <span>{member.completionRate}%</span>
                     </div>
-                    <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+                    <div className={`h-2 w-full overflow-hidden rounded-full bg-green-200 ${workloadBgClassL1}`}>
                       <div
-                        className="h-full bg-green-500 transition-all duration-500 ease-out"
+                        className={`h-full ${workloadBgClassL2} transition-all duration-500 ease-out`}
                         style={{ width: `${member.completionRate}%` }}
                       />
                     </div>
@@ -936,7 +960,10 @@ export default function ResumenPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {tasks.map((task, index) => (
+            {tasks.map((task, index) => {
+              const estaAtrasado = task.dueDate < new Date();
+
+              return (
               <div key={task.id}>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-lg border bg-card">
                   <div className="space-y-2 flex-1">
@@ -955,13 +982,13 @@ export default function ResumenPage() {
                       </Badge>
                     </div>
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className={`text-sm text-muted-foreground ${estaAtrasado ? "text-red-500 font-bold" : ""}`}>
                     Vence: {new Date(task.dueDate).toLocaleDateString("es-ES")}
                   </div>
                 </div>
                 {index < tasks.length - 1 && <Separator className="my-2" />}
               </div>
-            ))}
+            )})}
           </div>
         </CardContent>
       </Card>

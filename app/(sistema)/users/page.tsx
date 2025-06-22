@@ -435,7 +435,7 @@ export default function AdminUsersPage() {
             </Table>
           </div>
 
-          <div className="mt-4 flex items-center justify-end">
+          {/* <div className="mt-4 flex items-center justify-end">
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
@@ -460,7 +460,7 @@ export default function AdminUsersPage() {
                 </PaginationItem>
               </PaginationContent>
             </Pagination>
-          </div>
+          </div> */}
         </CardContent>
       </Card>
 

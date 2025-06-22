@@ -3,9 +3,10 @@
 import type React from "react"
 
 import Link from "next/link"
+import Image from 'next/image';
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+// import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { X } from "lucide-react"
@@ -13,13 +14,16 @@ import { X } from "lucide-react"
 import { login } from "@/lib/login"
 
 // Pendientes
-// - Poner una imagen real del proyecto en la pagina de inicio
+// + Poner una imagen real del proyecto en la pagina de inicio
+// + modificar el sistema de roles en la pagina de tareas, para que los administradores puedan editar todas las tareas, y los usuarios solo las propias
+// + Implementar sistema para los iconos con las iniciales del nombre
+// + eliminar y modificar secciones en la pagina de resumen
+// + mejorar colores en la pagina de resumen
+// + destacar las tareas fuera de limite en la pagina de resumen
+// + arreglar las etiquetas de las tareas en la pagina de resumen
 // - agregar un indicador de tareas fuera de la fecha limite en la pagina de home
-// - modificar el sistema de roles en la pagina de tareas, para que los administradores puedan editar todas las tareas, y los usuarios solo las propias
-// - Implementar sistema para los iconos con las iniciales del nombre
-// - eliminar y modificar secciones en la pagina de resumen
-// - mejorar colores en la pagina de resumen
-// - destacar las tareas fuera de limite en la pagina de resumen
+// - agregar boton para volver a mostrar el menu lateral
+// - Buscar donde poner el boton de descargar en la pagina de resumen
 
 export default function LandingPage() {
   const [showLoginForm, setShowLoginForm] = useState(false)
@@ -71,14 +75,11 @@ export default function LandingPage() {
           Iniciar sesión
         </Button>
       </header>
-      <div className="container mx-auto px-4 py-4 flex justify-center items-center">
-        <h2 className="font-bold bg-yellow-500 text-white px-2 py-1 rounded">Pagina temporal, agregar imagen de ejemplo y cambiar nobre de la app</h2>
-      </div>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+      <main className="container mx-auto px-4 py-12 grid grid-cols-1 lg:grid-cols-5 gap-12 items-center">
         {/* Left Column - Text Content */}
-        <div className="space-y-6">
+        <div className="space-y-6 col-span-1 lg:col-span-2">
           <h1 className="text-4xl md:text-5xl font-bold leading-tight">La plataforma integral para proyectos</h1>
           <p className="text-lg text-gray-700">
             CallampinesUP es una plataforma la cual facilita el trabajo en equipo, mostrando las tareas de cada
@@ -99,10 +100,14 @@ export default function LandingPage() {
           </div>
         </div>
 
+        <div className="bg-gradient-to-br from-green-50 to-transparent p-6 rounded-xl shadow-sm col-span-1 lg:col-span-3">
+          <Image src="/images/Ejemplo.png" alt="Imagen de ejemplo" width={2478} height={1500}/>
+        </div>
+
         {/* Right Column - Dashboard Preview */}
-        <div className="bg-gradient-to-br from-green-50 to-transparent p-6 rounded-xl shadow-sm">
+        {/* <div className="bg-gradient-to-br from-green-50 to-transparent p-6 rounded-xl shadow-sm">
           <div className="bg-white rounded-lg shadow-md overflow-hidden">
-            {/* Mock Navigation */}
+            {/* Mock Navigation * /}
             <div className="border-b p-4 flex items-center justify-between">
               <div className="flex items-center space-x-4">
                 <span className="font-semibold">Task Manager</span>
@@ -110,12 +115,12 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Mock Dashboard */}
+            {/* Mock Dashboard * /}
             <div className="p-6">
               <h2 className="text-xl font-bold mb-1">Mi Resumen</h2>
               <p className="text-sm text-gray-500 mb-4">Resumen de mis tareas</p>
 
-              {/* Task Stats */}
+              {/* Task Stats * /}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <Card>
                   <CardContent className="p-4">
@@ -231,13 +236,13 @@ export default function LandingPage() {
                 </Card>
               </div>
 
-              {/* Task List */}
+              {/* Task List * /}
               <div>
                 <h3 className="text-md font-semibold mb-3">Mis tareas</h3>
                 <p className="text-xs text-gray-500 mb-4">Tareas que están asignadas</p>
 
                 <div className="space-y-3">
-                  {/* High Priority Task */}
+                  {/* High Priority Task * /}
                   <div className="bg-red-50 border-l-4 border-red-500 rounded-md p-3">
                     <div className="flex justify-between">
                       <div>
@@ -252,7 +257,7 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  {/* Another High Priority Task */}
+                  {/* Another High Priority Task * /}
                   <div className="bg-red-50 border-l-4 border-red-500 rounded-md p-3">
                     <div className="flex justify-between">
                       <div>
@@ -267,7 +272,7 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  {/* Medium Priority Task */}
+                  {/* Medium Priority Task * /}
                   <div className="bg-yellow-50 border-l-4 border-yellow-500 rounded-md p-3">
                     <div className="flex justify-between">
                       <div>
@@ -282,7 +287,7 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  {/* Low Priority Task */}
+                  {/* Low Priority Task * /}
                   <div className="bg-green-50 border-l-4 border-green-500 rounded-md p-3">
                     <div className="flex justify-between">
                       <div>
@@ -300,7 +305,7 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </main>
       
       {/* Login Popup */}
