@@ -91,7 +91,7 @@ export default function TechnicalSupport() {
               <Phone className="h-5 w-5 text-primary" />
               <div>
                 <p className="font-medium">Teléfono de Soporte</p>
-                <p className="text-sm text-muted-foreground">+56 9 55558103</p>
+                <p className="text-sm text-muted-foreground">+56 9 3033 4207</p>
                 <p className="text-xs text-muted-foreground">Lunes a Viernes, 9:00 AM - 6:00 PM</p>
               </div>
             </div>

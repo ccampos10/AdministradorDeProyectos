@@ -212,6 +212,8 @@ export default function Calendar({tasks=[]}: { tasks: Task[] }) {
             const dayTasks = tasksByDate[dateStr] || []
             const dayOfWeek = date.getDay()
 
+            const algunoNoCompletado = dayTasks.some(task => {task.status != "completed"});
+
             return (
               <div
                 key={dateStr}
@@ -248,7 +250,7 @@ export default function Calendar({tasks=[]}: { tasks: Task[] }) {
                         </Badge>
                       ))}
                       
-                      {isPastDate(date) ? <div className="text-xs text-red-600 font-semibold">{dayTasks.length} tareas atrasadas</div> :
+                      {isPastDate(date) && algunoNoCompletado ? <div className="text-xs text-red-600 font-semibold">{dayTasks.length} tareas atrasadas</div> :
                         <span className="text-xs text-gray-500 ml-1">{dayTasks.length} tareas</span>
                       }
                     </div>
@@ -270,7 +272,7 @@ export default function Calendar({tasks=[]}: { tasks: Task[] }) {
                           </Badge>
                         )}
                       </div>
-                      {isPastDate(date) ? <div className="text-xs text-red-600 font-semibold">{dayTasks.length} tareas atrasadas</div> :
+                      {isPastDate(date) && algunoNoCompletado ? <div className="text-xs text-red-600 font-semibold">{dayTasks.length} tareas atrasadas</div> :
                         <span className="text-xs text-gray-500 ml-1">{dayTasks.length} tareas</span>
                       }
                     </div>
