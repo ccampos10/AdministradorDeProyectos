@@ -220,7 +220,7 @@ export default function Calendar({tasks=[]}: { tasks: Task[] }) {
                 className={`min-h-24 p-2 border rounded-lg transition-colors transition-transform hover:scale-110 hover:shadow-md ${
                     isToday(date)
                     ? "bg-blue-100 border-blue-300 hover:bg-blue-200"
-                    : isPastDate(date) && dayTasks.length > 0
+                    : isPastDate(date) && algunoNoCompletado && dayTasks.length > 0
                       ? "bg-red-50 border-red-200 hover:bg-red-100"
                       : isWeekend(date)
                         ? "bg-gray-50 hover:bg-gray-100"
