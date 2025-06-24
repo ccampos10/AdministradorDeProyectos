@@ -1,5 +1,5 @@
 // URL base de la API
-export const API_Base = "https://crucial-flea-partially.ngrok-free.app/"; // Tener en cuenta el / al final !!!!!!!
+export const API_Base = "http://localhost:3030/"; // Tener en cuenta el / al final !!!!!!!
 const API_URL = API_Base+"api/tareas/";
 import { Task } from "@/components/task-management-system";
 

@@ -167,6 +167,12 @@ export default function Calendar({tasks=[]}: { tasks: Task[] }) {
     low: "bg-green-100 text-green-800 border-green-200",
   }
 
+  const statusColors = {
+    pending: "bg-blue-500",
+    "in-progress": "bg-purple-500",
+    completed: "bg-gray-500",
+  }
+
   const styles = `
   @keyframes fade-in {
     from { opacity: 0; }
@@ -212,7 +218,7 @@ export default function Calendar({tasks=[]}: { tasks: Task[] }) {
             const dayTasks = tasksByDate[dateStr] || []
             const dayOfWeek = date.getDay()
 
-            const algunoNoCompletado = dayTasks.some(task => {task.status != "completed"});
+            const algunoNoCompletado = dayTasks.some(task => task.status != "completed");
 
             return (
               <div
@@ -246,11 +252,15 @@ export default function Calendar({tasks=[]}: { tasks: Task[] }) {
                           variant="outline"
                           className={`text-xs ${priorityColors[task.priority]} w-full justify-start p-2`}
                         >
-                          {truncateText(task.title, 14)}
+                          {truncateText(task.title, 12)}
+                          <div
+                            className={`w-2.5 h-2.5 rounded-full ml-auto ${statusColors[task.status]}`}
+                          >
+                          </div>
                         </Badge>
                       ))}
                       
-                      {isPastDate(date) && algunoNoCompletado ? <div className="text-xs text-red-600 font-semibold">{dayTasks.length} tareas atrasadas</div> :
+                      {isPastDate(date) && algunoNoCompletado ? <div className="text-xs text-red-600 font-semibold">{dayTasks.filter(task => task.status != "completed").length} tareas atrasadas</div> :
                         <span className="text-xs text-gray-500 ml-1">{dayTasks.length} tareas</span>
                       }
                     </div>
@@ -268,11 +278,15 @@ export default function Calendar({tasks=[]}: { tasks: Task[] }) {
                         ))}
                         {hoveredTask && hoveredTask.dueDate.toDateString() == date.toDateString() && (
                           <Badge variant="outline" className={`text-xs ${priorityColors[hoveredTask.priority]} w-full justify-start`}>
-                            {hoveredTask.title}
+                            {truncateText(hoveredTask.title, 12)}
+                            <div
+                            className={`w-2.5 h-2.5 rounded-full ml-auto ${statusColors[hoveredTask.status]}`}
+                            >
+                            </div>
                           </Badge>
                         )}
                       </div>
-                      {isPastDate(date) && algunoNoCompletado ? <div className="text-xs text-red-600 font-semibold">{dayTasks.length} tareas atrasadas</div> :
+                      {isPastDate(date) && algunoNoCompletado ? <div className="text-xs text-red-600 font-semibold">{dayTasks.filter(task => task.status != "completed").length} tareas atrasadas</div> :
                         <span className="text-xs text-gray-500 ml-1">{dayTasks.length} tareas</span>
                       }
                     </div>
