@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Phone, Mail, Send, CheckCircle, AlertCircle } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
+import { API_Base } from "@/lib/data"
+
 export default function TechnicalSupport() {
   const [formData, setFormData] = useState({
     email: "",
@@ -37,7 +39,7 @@ export default function TechnicalSupport() {
     setStatus({ type: null, message: "" })
 
     try {
-      const response = await fetch("http://localhost:3030/api/email", {
+      const response = await fetch(API_Base+"api/email", {
         method: "POST",
         credentials: "include",
         headers: {
